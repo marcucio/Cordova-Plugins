@@ -241,7 +241,10 @@
 		}
 		transaction_callback_queue[this.trans_id]['success'] = successcb;
 		transaction_callback_queue[this.trans_id]['error'] = errorcb;
-		PhoneGap.exec(null, null, "SQLitePlugin", "executeSqlBatch", transaction_queue[this.trans_id]);
+		if(transaction_queue[this.trans_id].length)
+			PhoneGap.exec(null, null, "SQLitePlugin", "executeSqlBatch", transaction_queue[this.trans_id]);
+		else
+			successcb();
     };
     return SQLitePluginTransaction;
   })();
