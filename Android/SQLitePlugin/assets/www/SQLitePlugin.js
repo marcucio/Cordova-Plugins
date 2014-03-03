@@ -80,10 +80,14 @@
 		transaction_queue[this.trans_id] = [];
 		transaction_callback_queue[this.trans_id] = new Object();
 	}
-    SQLitePluginTransaction.queryCompleteCallback = function(transId, queryId, result) 
+    SQLitePluginTransaction.queryCompleteCallback = function(transId, queryId, result2) 
     {
-    	console.log("SQLitePluginTransaction.queryCompleteCallback");
+    	console.log("SQLitePluginTransaction.queryCompleteCallback result2:"+result2);
     	var query = null;
+    	var result = result2;
+    	if(result2.length) {
+    		result = JSON.parse(unescape(result2));
+    	}
 		for (var x in transaction_queue[transId]) 
 		{
 			if(transaction_queue[transId][x]['query_id'] == queryId)
