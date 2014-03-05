@@ -13,7 +13,23 @@
     callbacks[f] = hash;
     return f;
   };
+ 
+  sanitizeString = function (string) {
+    if (string.substring) {
+      return string.replace(/[\u2028\u80A8]/g,'');
+    }
+    else {
+      return string;
+    }
+   };
 
+   sanitizeArray = function (query) {
+      for (var x in query) {
+          query[x] = sanitizeString(query[x]);
+      }
+      return query;
+   };
+   
   getOptions = function(opts, success, error) {
     var cb, has_cbs;
     cb = {};
@@ -62,8 +78,11 @@
     SQLitePlugin.prototype.executeSql = function(sql, values, success, error) {
       var opts;
       if (!sql) throw new Error("Cannot executeSql without a query");
+  
+      var values2 = values || [];
+      var query = [sql].concat(sanitizeArray(values2));
       opts = getOptions({
-        query: [sql].concat(values || []),
+        query: query,
         path: this.dbPath
       }, success, error);
       PhoneGap.exec("SQLitePlugin.backgroundExecuteSql", opts);
@@ -136,8 +155,11 @@
           return error(txself, res);
         };
       }
+    
+      var values2 = values || [];
+      var query = [sql].concat(sanitizeArray(values2));
       this.executes.push(getOptions({
-        query: [sql].concat(values || []),
+        query: query,
         path: this.dbPath
       }, successcb, errorcb));
     };
