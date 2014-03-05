@@ -2,12 +2,10 @@
 	var root;
 	root = this;
 	root.SQLitePlugin = (function() {
-	console.log("root.SQLitePlugin");
     SQLitePlugin.prototype.openDBs = {};
 
     function SQLitePlugin(dbPath, openSuccess, openError) 
     {
-    	console.log("SQLitePlugin");
     	this.dbPath = dbPath;
     	this.openSuccess = openSuccess;
     	this.openError = openError;
@@ -25,7 +23,6 @@
 
     SQLitePlugin.prototype.transaction = function(fn, error, success) 
     {
-    	console.log("SQLitePlugin.prototype.transaction");
     	var t;
     	t = new root.SQLitePluginTransaction(this.dbPath);
     	fn(t);
@@ -34,7 +31,6 @@
 
     SQLitePlugin.prototype.open = function(success, error) 
     {
-    	console.log("SQLitePlugin.prototype.open");
     	var opts;
     	if (!(this.dbPath in this.openDBs)) {
     		this.openDBs[this.dbPath] = true;
@@ -44,7 +40,6 @@
 
     SQLitePlugin.prototype.close = function(success, error) 
     {
-		console.log("SQLitePlugin.prototype.close");
 		var opts;
 		if (this.dbPath in this.openDBs) {
 			delete this.openDBs[this.dbPath];
@@ -66,23 +61,19 @@
 	transaction_queue = [];
 	transaction_callback_queue = new Object();
 	root.SQLitePluginTransaction = (function() {
-	console.log("root.SQLitePluginTransaction");
 	function SQLitePluginTransaction(dbPath) 
 	{
-		console.log("root.SQLitePluginTransaction.SQLitePluginTransaction");
 		this.dbPath = dbPath;
 		this.executes = [];
 		this.trans_id = get_unique_id();
 		this.__completed = false;
 		this.__submitted = false;
 		this.optimization_no_nested_callbacks = true;//if set to true large batches of queries within a transaction will be much faster but you lose the ability to do muiti level nesting of executeSQL callbacks
-		console.log("root.SQLitePluginTransaction - this.trans_id:"+this.trans_id);
 		transaction_queue[this.trans_id] = [];
 		transaction_callback_queue[this.trans_id] = new Object();
 	}
     SQLitePluginTransaction.queryCompleteCallback = function(transId, queryId, result2) 
     {
-    	console.log("SQLitePluginTransaction.queryCompleteCallback result2:"+result2);
     	var query = null;
     	var result = result2;
     	if(result2.length) {
@@ -101,8 +92,6 @@
 			}
 		}
 
-//		if(query)
-//	      	console.log("SQLitePluginTransaction.completeCallback---query:"+query['query']);
 		if(query && query['callback'])
 		{
 			query['callback'](result)
@@ -123,8 +112,7 @@
 				break;
 			}
 		}
-		//if(query)
-	    //  	console.log("SQLitePluginTransaction.queryErrorCallback---query:"+query['query']);
+
 		if(query && query['err_callback'])
 			query['err_callback'](result)
     }
@@ -148,7 +136,6 @@
     {
     	if(typeof transId != 'undefined')
     	{
-		    console.log("SQLitePluginTransaction.txErrorCallback---transId:"+transId);
 		    if(transId && transaction_callback_queue[transId]['error'])
 		    	transaction_callback_queue[transId]['error'](error);
 		    delete transaction_queue[transId];
@@ -178,16 +165,13 @@
     }
 
 	SQLitePluginTransaction.prototype.executeSql = function(sql, values, success, error) {
-		console.log("SQLitePluginTransaction.prototype.executeSql");
 		var errorcb, successcb, txself;
 		txself = this;
 		successcb = null;
 		if (success) 
 		{
-			console.log("success not null:"+sql);
 			successcb = function(execres) 
 			{
-				console.log("executeSql callback:"+JSON.stringify(execres));
 				var res, saveres;
 				saveres = execres;
 				res = {
@@ -203,8 +187,6 @@
 				return success(txself, res);
 			};
 		}
-		else
-			console.log("success NULL:"+sql);
 		
 		errorcb = null;
 		if (error) {
@@ -213,11 +195,9 @@
 			};
 		}
 		this.add_to_transaction(this.trans_id, sql, values, successcb, errorcb);
-		console.log("executeSql - add_to_transaction"+sql);
 	};
  
 	SQLitePluginTransaction.prototype.complete = function(success, error) {
-		console.log("SQLitePluginTransaction.prototype.complete");
 		var begin_opts, commit_opts, errorcb, executes, opts, successcb, txself;
 		if (this.__completed) throw new Error("Transaction already run");
 		if (this.__submitted) throw new Error("Transaction already submitted");
